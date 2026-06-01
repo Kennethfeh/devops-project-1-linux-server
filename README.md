@@ -6,10 +6,6 @@ A hardened Ubuntu 24.04 server on AWS Lightsail, with automated daily backups, S
 
 A single Lightsail Ubuntu 24.04 instance, locked down to my home IP, serving an Nginx default page over HTTP. SSH key auth only — no passwords, no root login. A systemd `.timer` runs a backup script daily that tars `/etc`, `/home/ubuntu`, and `/var/log/nginx` into a date-stamped directory under `/var/backups/server/`, with a 7-day retention sweep. fail2ban watches `/var/log/auth.log` for brute-force attempts. journalctl is the source of truth for everything else. First server in my DevOps bootcamp — foundation for everything that comes after.
 
-## Why
-
-Every DevOps job posting lists Linux fundamentals first, and there's a good reason for that. Nothing higher in the stack works if you can't navigate the filesystem, write a unit file, or harden a default install. This project exists so I can answer "do you know Linux?" with proof, not vibes — a real box, a real script, real logs, and a real story about what went wrong.
-
 ## Architecture
 
 One Lightsail Ubuntu 24.04 box on the $5/month tier. Cloud firewall locked to my home IP for SSH (port 22); port 80 open for Nginx. Nginx serves the default site. A `backup.timer` unit triggers `backup.service` once a day with up to 15 minutes of randomized delay; the service runs `/home/ubuntu/scripts/backup.sh` as root, which produces a `/var/backups/server/YYYY-MM-DD/` directory containing one `.tar.gz` per source. fail2ban watches sshd auth attempts. Logs go to both `/var/log/backup.log` and the systemd journal so I can query them either way.
